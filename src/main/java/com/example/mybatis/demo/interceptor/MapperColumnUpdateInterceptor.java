@@ -160,7 +160,7 @@ public class MapperColumnUpdateInterceptor implements Interceptor {
                               String columnName,
                               PropertyDescriptor propertyDescriptor){
 
-        if (haveColumn(columns,columnName)) {
+        if (!haveColumn(columns,columnName)) {
             columns.add(0, new Column(columnName));
             expressions.add(0, new JdbcParameter());
 
