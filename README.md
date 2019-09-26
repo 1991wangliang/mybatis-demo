@@ -1,4 +1,4 @@
-# mybatis-demo
+# mybatis-demo mybatis统一表字段统一维护demo
 
 在每一张表下增加固定字段，在操作数据的时候通过权限识别用户然后维护字段信息。
 
