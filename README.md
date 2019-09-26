@@ -74,6 +74,6 @@ update 更新以后可以查询到维护者的信息. 详情见源码
 
 ## 项目启动说明
 
-1、执行创建test数据库，执行init.sql
-2、配置`application.properties`的数据库环境
-3、运行单元测试`DemoApplicationTests`
+1、执行创建test数据库，执行init.sql   
+2、配置`application.properties`的数据库环境   
+3、运行单元测试`DemoApplicationTests`   
