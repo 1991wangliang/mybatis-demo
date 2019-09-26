@@ -1,8 +1,8 @@
-# mybatis-demo
+# mybatis统一表字段统一维护demo
 
-在每一张表下增加固定字段，在操作数据的还是通过框架维护这些信息。
+在每一张表下增加固定字段，在操作数据的时候通过权限识别用户然后维护字段信息。
 
-字段如下:
+数据库表下增加的字段如下:
 
 ```
     /**
@@ -34,6 +34,7 @@
     private Date lastUpdateTime;
 ```
 
+演示说明:
 
 ```
 
@@ -51,18 +52,20 @@
 
     @Test
     public void update() {
+        //执行业务
         com.example.mybatis.demo.domain.Test test = new com.example.mybatis.demo.domain.Test();
         test.setName("new Name 1");
         test.setId(1L);
         int rs = testMapper.updateName(test);
         log.info("rs->{}",rs);
         Assert.assertTrue(rs==1);
-
+        //查询数据
         List<com.example.mybatis.demo.domain.Test> list =  testMapper.findAll();
         log.info("list->{}",list);
         Assert.assertTrue(list.size()>0);
+        
+        
     }
     
 ```
-
-update 更新以后也会带上修改者的信息.
+update 更新以后可以查询到维护者的信息. 详情见源码
