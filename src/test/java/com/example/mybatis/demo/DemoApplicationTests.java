@@ -1,6 +1,5 @@
 package com.example.mybatis.demo;
 
-import com.example.mybatis.demo.domain.MapperThreadUserInfo;
 import com.example.mybatis.demo.mapper.TestMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;

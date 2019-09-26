@@ -1,4 +1,4 @@
-package com.example.mybatis.demo.domain;
+package com.example.mybatis.demo;
 
 /**
  * @author lorne

@@ -2,7 +2,7 @@ package com.example.mybatis.demo.interceptor;
 
 import com.example.mybatis.demo.annotation.MapperColumn;
 import com.example.mybatis.demo.domain.BaseMapperBean;
-import com.example.mybatis.demo.domain.MapperThreadUserInfo;
+import com.example.mybatis.demo.MapperThreadUserInfo;
 import lombok.extern.slf4j.Slf4j;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.JdbcParameter;
