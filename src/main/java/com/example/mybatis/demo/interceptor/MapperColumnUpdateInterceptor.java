@@ -1,6 +1,7 @@
 package com.example.mybatis.demo.interceptor;
 
 import com.example.mybatis.demo.annotation.MapperColumn;
+import com.example.mybatis.demo.annotation.UpdateColumn;
 import com.example.mybatis.demo.domain.BaseMapperBean;
 import com.example.mybatis.demo.MapperThreadUserInfo;
 import lombok.extern.slf4j.Slf4j;
@@ -27,10 +28,12 @@ import org.apache.ibatis.session.Configuration;
 import org.springframework.beans.BeanUtils;
 
 import java.beans.PropertyDescriptor;
+import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.sql.Connection;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -63,12 +66,21 @@ public class MapperColumnUpdateInterceptor implements Interceptor {
         BoundSql boundSql = statementHandler.getBoundSql();
         SqlCommandType sqlCommandType =  mappedStatement.getSqlCommandType();
 
-        //更新操作
+        //更新操作 bean对象
         if(     SqlCommandType.UPDATE.equals(sqlCommandType)
                 &&MapperThreadUserInfo.getInstance()!=null
                 && haveMapperColumnOnObject(parameterObject)) {
 
             prepareSql(mappedStatement,metaStatementHandler,parameterObject,boundSql,sqlCommandType);
+        }
+
+        UpdateColumn updateColumn = getUpdateColumn(mappedStatement);
+        //更新操作 param 对象
+        if(     SqlCommandType.UPDATE.equals(sqlCommandType)
+                &&MapperThreadUserInfo.getInstance()!=null
+                &&updateColumn!=null){
+
+            prepareParamSql(mappedStatement,metaStatementHandler,parameterObject,boundSql,sqlCommandType,updateColumn);
         }
 
         //插入操作
@@ -81,6 +93,65 @@ public class MapperColumnUpdateInterceptor implements Interceptor {
 
         log.debug("update-boundSql->{}",boundSql.getSql());
         return invocation.proceed();
+    }
+
+
+    /**
+     * 处理sql的更新业务
+     * @param mappedStatement   mybatis MappedStatement
+     * @param metaStatementHandler mybatis MetaObject
+     * @param parameterObject   传入参数 bean
+     * @param boundSql      sql对象
+     * @param sqlCommandType    sql类型
+     * @throws Exception    sql异常
+     */
+    private void prepareParamSql( MappedStatement mappedStatement,
+                             MetaObject metaStatementHandler,
+                             Object parameterObject,
+                             BoundSql boundSql,
+                             SqlCommandType sqlCommandType,
+                             UpdateColumn updateColumn) throws Exception {
+
+        String sql = boundSql.getSql();
+        Statement statement = CCJSqlParserUtil.parse(sql);
+
+        if (SqlCommandType.UPDATE.equals(sqlCommandType)) {
+
+            Update update = (Update) statement;
+
+            List<Column> columns = update.getColumns();
+            List<Expression> expressions = update.getExpressions();
+            List<ParameterMapping> parameterMappings = boundSql.getParameterMappings();
+
+            if (!haveColumn(update.getColumns(), updateColumn.lastUpdateMan())) {
+                columns.add(0, new Column( updateColumn.lastUpdateMan()));
+                expressions.add(0, new JdbcParameter());
+
+                ((Map)boundSql.getParameterObject()).put(updateColumn.lastUpdateMan(),MapperThreadUserInfo.getInstance().getUser());
+
+                ParameterMapping parameterMapping =
+                        new ParameterMapping.Builder(
+                                mappedStatement.getConfiguration(), updateColumn.lastUpdateMan(), String.class)
+                                .build();
+                parameterMappings.add(0, parameterMapping);
+            }
+
+            if (!haveColumn(update.getColumns(), updateColumn.lastUpdateTime())) {
+                columns.add(0, new Column( updateColumn.lastUpdateTime()));
+                expressions.add(0, new JdbcParameter());
+
+                ((Map)boundSql.getParameterObject()).put(updateColumn.lastUpdateTime(),new Date());
+
+                ParameterMapping parameterMapping =
+                        new ParameterMapping.Builder(
+                                mappedStatement.getConfiguration(), updateColumn.lastUpdateTime(), Date.class)
+                                .build();
+                parameterMappings.add(0, parameterMapping);
+            }
+        }
+
+        //更新sql对象
+        metaStatementHandler.setValue("delegate.boundSql.sql", statement.toString());
     }
 
     /**
@@ -204,6 +275,19 @@ public class MapperColumnUpdateInterceptor implements Interceptor {
             }
         }
         return false;
+    }
+
+    private UpdateColumn getUpdateColumn(MappedStatement mappedStatement) throws Exception{
+        String id = mappedStatement.getId();
+        String className = id.substring(0,id.lastIndexOf("."));
+        String methodStr = id.substring(id.lastIndexOf(".")+1,id.length());
+        Class clazz =  Class.forName(className);
+        for (Method method: clazz.getMethods()){
+            if(methodStr.equals(method.getName())){
+                return method.getAnnotation(UpdateColumn.class);
+            }
+        }
+        return null;
     }
 
     /**

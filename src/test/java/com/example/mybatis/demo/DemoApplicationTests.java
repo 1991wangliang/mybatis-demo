@@ -9,7 +9,9 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
+import sun.reflect.misc.MethodUtil;
 
+import java.lang.reflect.Method;
 import java.util.List;
 
 @RunWith(SpringRunner.class)
@@ -44,6 +46,19 @@ public class DemoApplicationTests {
         Assert.assertTrue(list.size()>0);
     }
 
+
+    @Test
+    public void updateNameById() {
+        int rs = testMapper.updateNameById("my test name",1L);
+        log.info("rs->{}",rs);
+        Assert.assertTrue(rs==1);
+
+        List<com.example.mybatis.demo.domain.Test> list =  testMapper.findAll();
+        log.info("list->{}",list);
+        Assert.assertTrue(list.size()>0);
+    }
+
+
     @Test
     public void insert() {
         com.example.mybatis.demo.domain.Test test1 = new com.example.mybatis.demo.domain.Test();
@@ -56,4 +71,6 @@ public class DemoApplicationTests {
         log.info("list->{}",list);
         Assert.assertTrue(list.size()>0);
     }
+
+
 }

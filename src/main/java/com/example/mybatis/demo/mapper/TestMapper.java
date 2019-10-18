@@ -1,10 +1,8 @@
 package com.example.mybatis.demo.mapper;
 
+import com.example.mybatis.demo.annotation.UpdateColumn;
 import com.example.mybatis.demo.domain.Test;
-import org.apache.ibatis.annotations.Insert;
-import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Select;
-import org.apache.ibatis.annotations.Update;
+import org.apache.ibatis.annotations.*;
 
 import java.util.List;
 
@@ -24,5 +22,10 @@ public interface TestMapper {
 
     @Update("update t_test set name = #{name} where id = #{id}")
     int updateName(Test test);
+
+
+    @Update("update `t_test` set name = #{name} where id = #{id}")
+    @UpdateColumn
+    int updateNameById(@Param("name") String name,@Param("id") Long id);
 
 }
