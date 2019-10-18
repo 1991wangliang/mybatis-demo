@@ -80,7 +80,7 @@ public class MapperColumnUpdateInterceptor implements Interceptor {
                 &&MapperThreadUserInfo.getInstance()!=null
                 &&updateColumn!=null){
 
-            prepareParamSql(mappedStatement,metaStatementHandler,parameterObject,boundSql,sqlCommandType,updateColumn);
+            prepareParamSql(mappedStatement,metaStatementHandler,boundSql,sqlCommandType,updateColumn);
         }
 
         //插入操作
@@ -100,14 +100,13 @@ public class MapperColumnUpdateInterceptor implements Interceptor {
      * 处理sql的更新业务
      * @param mappedStatement   mybatis MappedStatement
      * @param metaStatementHandler mybatis MetaObject
-     * @param parameterObject   传入参数 bean
      * @param boundSql      sql对象
      * @param sqlCommandType    sql类型
+     * @param updateColumn   updateColumn
      * @throws Exception    sql异常
      */
     private void prepareParamSql( MappedStatement mappedStatement,
                              MetaObject metaStatementHandler,
-                             Object parameterObject,
                              BoundSql boundSql,
                              SqlCommandType sqlCommandType,
                              UpdateColumn updateColumn) throws Exception {
