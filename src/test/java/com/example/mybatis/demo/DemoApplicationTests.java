@@ -49,7 +49,7 @@ public class DemoApplicationTests {
 
     @Test
     public void updateNameById() {
-        int rs = testMapper.updateNameById("my test name",1L);
+        int rs = testMapper.updateNameById("my test name",2L);
         log.info("rs->{}",rs);
         Assert.assertTrue(rs==1);
 

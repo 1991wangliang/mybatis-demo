@@ -15,17 +15,19 @@ import java.util.List;
 public interface TestMapper {
 
     @Insert("insert into t_test(name) values(#{name})")
+//    @UpdateColumn
     int save(Test test);
 
     @Select("select * from t_test ")
     List<Test> findAll();
 
     @Update("update t_test set name = #{name} where id = #{id}")
+//    @UpdateColumn
     int updateName(Test test);
 
 
     @Update("update `t_test` set name = #{name} where id = #{id}")
-    @UpdateColumn
+//    @UpdateColumn
     int updateNameById(@Param("name") String name,@Param("id") Long id);
 
 }

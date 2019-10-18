@@ -1,6 +1,7 @@
 package com.example.mybatis.demo;
 
-import com.example.mybatis.demo.interceptor.MapperColumnUpdateInterceptor;
+import com.example.mybatis.demo.interceptor.MapperAllInterceptor;
+import com.example.mybatis.demo.interceptor.MapperUpdateColumnInterceptor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,9 +14,15 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class MapperMybatisConfiguration {
 
+//    @Bean
+//    @ConditionalOnMissingBean
+//    public MapperUpdateColumnInterceptor mapperUpdateColumnInterceptor(){
+//        return new MapperUpdateColumnInterceptor();
+//    }
+
     @Bean
     @ConditionalOnMissingBean
-    public MapperColumnUpdateInterceptor mapperColumnUpdateInterceptor(){
-        return new MapperColumnUpdateInterceptor();
+    public MapperAllInterceptor mapperAllInterceptor(){
+        return new MapperAllInterceptor();
     }
 }

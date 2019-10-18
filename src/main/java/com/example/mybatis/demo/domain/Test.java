@@ -14,7 +14,7 @@ import lombok.ToString;
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString(callSuper=true)
-public class Test extends BaseMapperBean {
+public class Test {
 
     private Long id;
 

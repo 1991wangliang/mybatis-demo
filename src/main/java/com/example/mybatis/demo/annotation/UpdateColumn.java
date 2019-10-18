@@ -16,4 +16,8 @@ public @interface UpdateColumn {
 
     String lastUpdateMan() default "last_update_man";
 
+    String createMan() default "create_man";
+
+    String createTime() default "create_time";
+
 }
