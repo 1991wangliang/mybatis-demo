@@ -63,6 +63,8 @@ public class DemoApplicationTests {
     public void insert() {
         com.example.mybatis.demo.domain.Test test1 = new com.example.mybatis.demo.domain.Test();
         test1.setName("my name 1");
+        testMapper.save(test1);
+        test1.setName("my name 2");
         int rs = testMapper.save(test1);
         Assert.assertTrue(rs==1);
         log.info("rs->{}",rs);

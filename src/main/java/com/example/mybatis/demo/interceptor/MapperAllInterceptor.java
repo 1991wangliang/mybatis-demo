@@ -107,11 +107,13 @@ public class MapperAllInterceptor implements Interceptor {
 
                 boundSql.setAdditionalParameter(UpdateColumnConstants.lastUpdateMan,MapperThreadUserInfo.getInstance().getUser());
 
-                ParameterMapping parameterMapping =
-                        new ParameterMapping.Builder(
-                                mappedStatement.getConfiguration(), UpdateColumnConstants.lastUpdateMan, String.class)
-                                .build();
-                parameterMappings.add(0, parameterMapping);
+                if(!haveParameter(parameterMappings,UpdateColumnConstants.lastUpdateMan)) {
+                    ParameterMapping parameterMapping =
+                            new ParameterMapping.Builder(
+                                    mappedStatement.getConfiguration(), UpdateColumnConstants.lastUpdateMan, String.class)
+                                    .build();
+                    parameterMappings.add(0, parameterMapping);
+                }
             }
 
             if (!haveColumn(update.getColumns(), UpdateColumnConstants.lastUpdateTime)) {
@@ -120,11 +122,14 @@ public class MapperAllInterceptor implements Interceptor {
 
                 boundSql.setAdditionalParameter(UpdateColumnConstants.lastUpdateTime,new Date());
 
-                ParameterMapping parameterMapping =
-                        new ParameterMapping.Builder(
-                                mappedStatement.getConfiguration(), UpdateColumnConstants.lastUpdateTime, Date.class)
-                                .build();
-                parameterMappings.add(0, parameterMapping);
+
+                if(!haveParameter(parameterMappings,UpdateColumnConstants.lastUpdateTime)) {
+                    ParameterMapping parameterMapping =
+                            new ParameterMapping.Builder(
+                                    mappedStatement.getConfiguration(), UpdateColumnConstants.lastUpdateTime, Date.class)
+                                    .build();
+                    parameterMappings.add(0, parameterMapping);
+                }
             }
         }
 
@@ -142,11 +147,13 @@ public class MapperAllInterceptor implements Interceptor {
 
                 boundSql.setAdditionalParameter(UpdateColumnConstants.createMan,MapperThreadUserInfo.getInstance().getUser());
 
-                ParameterMapping parameterMapping =
-                        new ParameterMapping.Builder(
-                                mappedStatement.getConfiguration(), UpdateColumnConstants.createMan, String.class)
-                                .build();
-                parameterMappings.add(0, parameterMapping);
+                if(!haveParameter(parameterMappings,UpdateColumnConstants.createMan)) {
+                    ParameterMapping parameterMapping =
+                            new ParameterMapping.Builder(
+                                    mappedStatement.getConfiguration(), UpdateColumnConstants.createMan, String.class)
+                                    .build();
+                    parameterMappings.add(0, parameterMapping);
+                }
             }
 
             if (!haveColumn(columns, UpdateColumnConstants.createTime)) {
@@ -155,16 +162,34 @@ public class MapperAllInterceptor implements Interceptor {
 
                 boundSql.setAdditionalParameter(UpdateColumnConstants.createTime,new Date());
 
-                ParameterMapping parameterMapping =
-                        new ParameterMapping.Builder(
-                                mappedStatement.getConfiguration(), UpdateColumnConstants.createTime, Date.class)
-                                .build();
-                parameterMappings.add(0, parameterMapping);
+                if(!haveParameter(parameterMappings,UpdateColumnConstants.createTime)) {
+                    ParameterMapping parameterMapping =
+                            new ParameterMapping.Builder(
+                                    mappedStatement.getConfiguration(), UpdateColumnConstants.createTime, Date.class)
+                                    .build();
+                    parameterMappings.add(0, parameterMapping);
+                }
             }
         }
 
         //更新sql对象
         metaStatementHandler.setValue("delegate.boundSql.sql", statement.toString());
+    }
+
+
+    /**
+     * 判断 mybatis.parameterMappings是否包含 propertyName
+     * @param parameterMappings parameterMappings
+     * @param propertyName propertyName
+     * @return 是否包含
+     */
+    private boolean haveParameter(List<ParameterMapping> parameterMappings, String propertyName){
+        for(ParameterMapping parameterMapping:parameterMappings){
+            if(parameterMapping.getProperty().equals(propertyName)){
+                return true;
+            }
+        }
+        return  false;
     }
 
 
