@@ -5,7 +5,6 @@ import com.example.mybatis.demo.MapperThreadUserInfo;
 import com.example.mybatis.demo.annotation.UpdateColumn;
 import lombok.extern.slf4j.Slf4j;
 import net.sf.jsqlparser.expression.Expression;
-import net.sf.jsqlparser.expression.JdbcParameter;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
@@ -17,16 +16,17 @@ import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.mapping.ParameterMapping;
 import org.apache.ibatis.mapping.SqlCommandType;
-import org.apache.ibatis.plugin.*;
+import org.apache.ibatis.plugin.Interceptor;
+import org.apache.ibatis.plugin.Intercepts;
+import org.apache.ibatis.plugin.Invocation;
+import org.apache.ibatis.plugin.Signature;
 import org.apache.ibatis.reflection.MetaObject;
 import org.apache.ibatis.reflection.SystemMetaObject;
 
 import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
 import java.sql.Connection;
 import java.util.Date;
 import java.util.List;
-import java.util.Properties;
 
 
 /**
@@ -36,18 +36,8 @@ import java.util.Properties;
  */
 @Slf4j
 @Intercepts(@Signature(type = StatementHandler.class, method = "prepare", args = {Connection.class, Integer.class}))
-public class MapperUpdateColumnInterceptor implements Interceptor {
+public class MapperUpdateColumnInterceptor extends BaseInterceptor implements Interceptor {
 
-    private final static String MAPPEDSTATEMENT_KEY = "delegate.mappedStatement";
-
-
-    private  <T> T realTarget(Object target) {
-        if (Proxy.isProxyClass(target.getClass())) {
-            MetaObject metaObject = SystemMetaObject.forObject(target);
-            return realTarget(metaObject.getValue("h.target"));
-        }
-        return (T) target;
-    }
 
     @Override
     public Object intercept(Invocation invocation) throws Throwable {
@@ -107,36 +97,10 @@ public class MapperUpdateColumnInterceptor implements Interceptor {
             List<Expression> expressions = update.getExpressions();
             List<ParameterMapping> parameterMappings = boundSql.getParameterMappings();
 
-            if (!haveColumn(update.getColumns(), updateColumn.lastUpdateMan())) {
-                columns.add(0, new Column( updateColumn.lastUpdateMan()));
-                expressions.add(0, new JdbcParameter());
+            checkParamter(columns,expressions,parameterMappings,boundSql,mappedStatement, updateColumn.lastUpdateMan(),String.class,MapperThreadUserInfo.getInstance().getUser());
 
-                boundSql.setAdditionalParameter(updateColumn.lastUpdateMan(),MapperThreadUserInfo.getInstance().getUser());
+            checkParamter(columns,expressions,parameterMappings,boundSql,mappedStatement,updateColumn.lastUpdateTime(),Date.class,new Date());
 
-                if(!haveParameter(parameterMappings,updateColumn.lastUpdateMan())) {
-                    ParameterMapping parameterMapping =
-                            new ParameterMapping.Builder(
-                                    mappedStatement.getConfiguration(), updateColumn.lastUpdateMan(), String.class)
-                                    .build();
-                    parameterMappings.add(0, parameterMapping);
-                }
-
-            }
-
-            if (!haveColumn(update.getColumns(), updateColumn.lastUpdateTime())) {
-                columns.add(0, new Column( updateColumn.lastUpdateTime()));
-                expressions.add(0, new JdbcParameter());
-
-                boundSql.setAdditionalParameter(updateColumn.lastUpdateTime(),new Date());
-
-                if(!haveParameter(parameterMappings,updateColumn.lastUpdateTime())) {
-                    ParameterMapping parameterMapping =
-                            new ParameterMapping.Builder(
-                                    mappedStatement.getConfiguration(), updateColumn.lastUpdateTime(), Date.class)
-                                    .build();
-                    parameterMappings.add(0, parameterMapping);
-                }
-            }
         }
 
         if (SqlCommandType.INSERT.equals(sqlCommandType)) {
@@ -147,56 +111,14 @@ public class MapperUpdateColumnInterceptor implements Interceptor {
             List<Expression> expressions = ((ExpressionList) insert.getItemsList()).getExpressions();
             List<ParameterMapping> parameterMappings = boundSql.getParameterMappings();
 
-            if (!haveColumn(columns, updateColumn.createMan())) {
-                columns.add(0, new Column( updateColumn.createMan()));
-                expressions.add(0, new JdbcParameter());
+            checkParamter(columns,expressions,parameterMappings,boundSql,mappedStatement, updateColumn.createMan(),String.class,MapperThreadUserInfo.getInstance().getUser());
 
-                boundSql.setAdditionalParameter(updateColumn.createMan(),MapperThreadUserInfo.getInstance().getUser());
+            checkParamter(columns,expressions,parameterMappings,boundSql,mappedStatement,updateColumn.createTime(),Date.class,new Date());
 
-                if(!haveParameter(parameterMappings,updateColumn.createMan())) {
-                    ParameterMapping parameterMapping =
-                            new ParameterMapping.Builder(
-                                    mappedStatement.getConfiguration(), updateColumn.createMan(), String.class)
-                                    .build();
-                    parameterMappings.add(0, parameterMapping);
-                }
-
-            }
-
-            if (!haveColumn(columns, updateColumn.createTime())) {
-                columns.add(0, new Column( updateColumn.createTime()));
-                expressions.add(0, new JdbcParameter());
-
-                boundSql.setAdditionalParameter(updateColumn.createTime(),new Date());
-
-                if(!haveParameter(parameterMappings,updateColumn.createTime())) {
-                    ParameterMapping parameterMapping =
-                            new ParameterMapping.Builder(
-                                    mappedStatement.getConfiguration(), updateColumn.createTime(), Date.class)
-                                    .build();
-                    parameterMappings.add(0, parameterMapping);
-                }
-            }
         }
 
         //更新sql对象
         metaStatementHandler.setValue("delegate.boundSql.sql", statement.toString());
-    }
-
-
-    /**
-     * 判断 mybatis.parameterMappings是否包含 propertyName
-     * @param parameterMappings parameterMappings
-     * @param propertyName propertyName
-     * @return 是否包含
-     */
-    private boolean haveParameter(List<ParameterMapping> parameterMappings, String propertyName){
-        for(ParameterMapping parameterMapping:parameterMappings){
-            if(parameterMapping.getProperty().equals(propertyName)){
-                return true;
-            }
-        }
-        return  false;
     }
 
 
@@ -213,28 +135,4 @@ public class MapperUpdateColumnInterceptor implements Interceptor {
         return null;
     }
 
-    /**
-     * 判断columnName 是否存在于 sqlparser.columns
-     * @param columns sqlparser.columns
-     * @param columnName 字段名称
-     * @return
-     */
-    private boolean haveColumn(List<Column> columns, String columnName){
-        for (Column column:columns){
-            if(column.getColumnName().equals(columnName)){
-                return true;
-            }
-        }
-        return false;
-    }
-
-    @Override
-    public Object plugin(Object target) {
-        return Plugin.wrap(target, this);
-    }
-
-    @Override
-    public void setProperties(Properties properties) {
-
-    }
 }
