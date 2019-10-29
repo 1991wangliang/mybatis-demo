@@ -25,6 +25,7 @@ import org.apache.ibatis.reflection.SystemMetaObject;
 
 import java.lang.reflect.Method;
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -89,13 +90,17 @@ public class MapperUpdateColumnInterceptor extends BaseInterceptor implements In
         String sql = boundSql.getSql();
         Statement statement = CCJSqlParserUtil.parse(sql);
 
+        List<ParameterMapping> parameterMappings = boundSql.getParameterMappings();
+        if(parameterMappings==null||parameterMappings.size()==0){
+            parameterMappings = new ArrayList<>();
+        }
+
         if (SqlCommandType.UPDATE.equals(sqlCommandType)) {
 
             Update update = (Update) statement;
 
             List<Column> columns = update.getColumns();
             List<Expression> expressions = update.getExpressions();
-            List<ParameterMapping> parameterMappings = boundSql.getParameterMappings();
 
             checkParamter(columns,expressions,parameterMappings,boundSql,mappedStatement, updateColumn.lastUpdateMan(),String.class,MapperThreadUserInfo.getInstance().getUser());
 
@@ -109,7 +114,6 @@ public class MapperUpdateColumnInterceptor extends BaseInterceptor implements In
 
             List<Column> columns = insert.getColumns();
             List<Expression> expressions = ((ExpressionList) insert.getItemsList()).getExpressions();
-            List<ParameterMapping> parameterMappings = boundSql.getParameterMappings();
 
             checkParamter(columns,expressions,parameterMappings,boundSql,mappedStatement, updateColumn.createMan(),String.class,MapperThreadUserInfo.getInstance().getUser());
 
@@ -119,6 +123,7 @@ public class MapperUpdateColumnInterceptor extends BaseInterceptor implements In
 
         //更新sql对象
         metaStatementHandler.setValue("delegate.boundSql.sql", statement.toString());
+        metaStatementHandler.setValue("delegate.boundSql.parameterMappings", parameterMappings);
     }
 
 

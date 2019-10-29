@@ -24,6 +24,7 @@ import org.apache.ibatis.reflection.MetaObject;
 import org.apache.ibatis.reflection.SystemMetaObject;
 
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -83,6 +84,10 @@ public class MapperAllInterceptor extends BaseInterceptor implements Interceptor
 
         String sql = boundSql.getSql();
         Statement statement = CCJSqlParserUtil.parse(sql);
+        List<ParameterMapping> parameterMappings = boundSql.getParameterMappings();
+        if(parameterMappings==null||parameterMappings.size()==0){
+            parameterMappings = new ArrayList<>();
+        }
 
         if (SqlCommandType.UPDATE.equals(sqlCommandType)) {
 
@@ -90,7 +95,6 @@ public class MapperAllInterceptor extends BaseInterceptor implements Interceptor
 
             List<Column> columns = update.getColumns();
             List<Expression> expressions = update.getExpressions();
-            List<ParameterMapping> parameterMappings = boundSql.getParameterMappings();
 
             checkParamter(columns,expressions,parameterMappings,boundSql,mappedStatement,UpdateColumnConstants.lastUpdateMan,String.class,MapperThreadUserInfo.getInstance().getUser());
 
@@ -103,17 +107,15 @@ public class MapperAllInterceptor extends BaseInterceptor implements Interceptor
 
             List<Column> columns = insert.getColumns();
             List<Expression> expressions = ((ExpressionList) insert.getItemsList()).getExpressions();
-            List<ParameterMapping> parameterMappings = boundSql.getParameterMappings();
-
 
             checkParamter(columns,expressions,parameterMappings,boundSql,mappedStatement,UpdateColumnConstants.createMan,String.class,MapperThreadUserInfo.getInstance().getUser());
 
             checkParamter(columns,expressions,parameterMappings,boundSql,mappedStatement,UpdateColumnConstants.createTime,Date.class,new Date());
-
         }
 
         //更新sql对象
         metaStatementHandler.setValue("delegate.boundSql.sql", statement.toString());
+        metaStatementHandler.setValue("delegate.boundSql.parameterMappings", parameterMappings);
     }
 
 

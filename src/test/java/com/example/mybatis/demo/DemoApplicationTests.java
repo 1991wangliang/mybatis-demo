@@ -57,6 +57,19 @@ public class DemoApplicationTests {
     }
 
 
+
+    @Test
+    public void updateOneName() {
+        int rs = testMapper.updateOneName();
+        log.info("rs->{}",rs);
+        Assert.assertTrue(rs==1);
+
+        List<com.example.mybatis.demo.domain.Test> list =  testMapper.findAll();
+        log.info("list->{}",list);
+        Assert.assertTrue(list.size()>0);
+    }
+
+
     @Test
     public void insert() {
         com.example.mybatis.demo.domain.Test test1 = new com.example.mybatis.demo.domain.Test();
